@@ -25,6 +25,14 @@ current_host=$(cat /etc/yunohost/current_host)
 ynh_script_progression "Setting up source files..."
 
 mkdir -p "$install_dir"
+mkdir -p "$install_dir/enabledModules"
+mkdir -p "$install_dir/modules/director/"
+mkdir -p "$install_dir/modules/icingadb/"
+
+ynh_safe_rm "/etc/icingaweb2"
+ln -s $install_dir /etc/icingaweb2
+ln -s /usr/share/icingaweb2/modules/icingadb $install_dir/enabledModules/icingadb
+ln -s /usr/share/icingaweb2/modules/director $install_dir/enabledModules/director
 
 chown -R "$app:www-data" "$install_dir"
 
@@ -38,10 +46,34 @@ ynh_config_add --template="config.yml" --destination="/etc/icingadb/config.yml"
 chmod 640 "/etc/icingadb/config.yml"
 chown "icingadb:root" "/etc/icingadb/config.yml"
 
+ynh_config_add --template="authentication.ini" --destination="$install_dir/authentication.ini"
+ynh_config_add --template="config.ini" --destination="$install_dir/config.ini"
+ynh_config_add --template="groups.ini" --destination="$install_dir/groups.ini"
+ynh_config_add --template="resources.ini" --destination="$install_dir/resources.ini"
+ynh_config_add --template="roles.ini" --destination="$install_dir/roles.ini"
+
+ynh_config_add --template="kickstart.ini" --destination="$install_dir/modules/director/kickstart.ini"
+ynh_config_add --template="/modules/director/config.ini" --destination="$install_dir/modules/director/config.ini"
+
+ynh_config_add --template="/modules/icingadb/commandtransports.ini" --destination="$install_dir/modules/icingadb/commandtransports.ini"
+ynh_config_add --template="/modules/icingadb/config.ini" --destination="$install_dir/modules/icingadb/config.ini"
+ynh_config_add --template="/modules/icingadb/redis.ini" --destination="$install_dir/modules/icingadb/redis.ini"
+
+ynh_config_add --template="api-users.conf" --destination="/etc/icinga2/conf.d/api-users.conf"
+chmod 644 "/etc/icinga2/conf.d/api-users.conf"
+chown "nagios:nagios" "/etc/icinga2/conf.d/api-users.conf"
+
+chmod -R 2770 "$install_dir"
+chown -R "www-data:icingaweb2" "$install_dir"
+chown "icinga:icingaweb2" "$install_dir"
+
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================
 ynh_script_progression "Adding system configurations related to $app..."
+
+# Create a PHP-FPM config (with conf/extra_php-fpm.conf being appended to it)
+ynh_config_add_phpfpm
 
 # Create a dedicated NGINX config using the conf/nginx.conf template
 ynh_config_add_nginx
@@ -53,46 +85,9 @@ yunohost service add "icinga2" --description="icinga2"
 #=================================================
 ynh_script_progression "Installing $app..."
 
-rm -rf /etc/icingaweb2
-ln -s $install_dir /etc/icingaweb2
-
-if [ true = true ]; then
-
-mkdir -p $install_dir/enabledModules
-ln -s /usr/share/icingaweb2/modules/icingadb $install_dir/enabledModules/icingadb
-ln -s /usr/share/icingaweb2/modules/director $install_dir/enabledModules/director
-
-ynh_config_add --template="authentication.ini" --destination="$install_dir/authentication.ini"
-ynh_config_add --template="config.ini" --destination="$install_dir/config.ini"
-ynh_config_add --template="groups.ini" --destination="$install_dir/groups.ini"
-ynh_config_add --template="resources.ini" --destination="$install_dir/resources.ini"
-ynh_config_add --template="roles.ini" --destination="$install_dir/roles.ini"
-
-mkdir -p "$install_dir/modules/director/"
-ynh_config_add --template="/modules/director/config.ini" --destination="$install_dir/modules/director/config.ini"
-
-mkdir -p "$install_dir/modules/icingadb/"
-ynh_config_add --template="/modules/icingadb/commandtransports.ini" --destination="$install_dir/modules/icingadb/commandtransports.ini"
-ynh_config_add --template="/modules/icingadb/config.ini" --destination="$install_dir/modules/icingadb/config.ini"
-ynh_config_add --template="/modules/icingadb/redis.ini" --destination="$install_dir/modules/icingadb/redis.ini"
-
-ynh_config_add --template="api-users.conf" --destination="/etc/icinga2/conf.d/api-users.conf"
-
-ynh_config_add --template="icingaweb2.sql" --destination="$install_dir/${db_name}web2.sql"
-ynh_config_add --template="icingadirector.sql" --destination="$install_dir/${db_name}director.sql"
-
-#chmod -R 760 "$install_dir"
-
-
-chmod -R 2770 "$install_dir"
-#chmod -R 2770 "$install_dir/enabledModules"
-chown -R "www-data:icingaweb2" "$install_dir"
-chown "icinga:icingaweb2" "$install_dir"
-
-fi
-
 icinga2 api setup
 ynh_systemctl --service="icinga2" --action="restart"
+
 ynh_mysql_db_shell <<< "CREATE DATABASE ${db_name}director DEFAULT CHARACTER SET 'utf8';"
 ynh_mysql_db_shell <<< "USE ${db_name}director;"
 ynh_mysql_db_shell <<< "GRANT ALL PRIVILEGES ON ${db_name}director.* TO '${db_user}'@'localhost' WITH GRANT OPTION;"
@@ -101,39 +96,27 @@ ynh_mysql_db_shell <<< "CREATE DATABASE ${db_name}web2 DEFAULT CHARACTER SET 'ut
 ynh_mysql_db_shell <<< "USE ${db_name}web2;"
 ynh_mysql_db_shell <<< "GRANT ALL PRIVILEGES ON ${db_name}web2.* TO '${db_user}'@'localhost' WITH GRANT OPTION;"
 ynh_mysql_db_shell <<< "FLUSH PRIVILEGES;"
-ynh_mysql_db_shell < /usr/share/icingadb/schema/mysql/schema.sql
-if [ true = true ]; then
 
+ynh_config_add --template="icingaweb2.sql" --destination="$install_dir/${db_name}web2.sql"
 ynh_mysql_db_shell "${db_name}web2" < "$install_dir/${db_name}web2.sql"
-ynh_mysql_db_shell "${db_name}director" < "$install_dir/${db_name}director.sql"
-
 ynh_safe_rm "$install_dir/${db_name}web2.sql"
-ynh_safe_rm "$install_dir/${db_name}director.sql"
 
-fi
+ynh_mysql_db_shell < /usr/share/icingadb/schema/mysql/schema.sql
+
+ynh_systemctl --service="icinga2" --action="restart"
+
+icingacli director migration run
+icingacli director kickstart run
+icingacli director host create 'standard-host' --object_type template --check_command hostalive
+icingacli director config render
+icingacli director config deploy
 
 systemctl enable --now icingadb-redis
 icinga2 feature enable icingadb
 systemctl enable --now icingadb
-ynh_systemctl --service="icinga-director" --action="restart"
-ynh_systemctl --service="icingadb-redis" --action="restart"
-ynh_systemctl --service="icingadb" --action="restart"
-ynh_systemctl --service="icinga2" --action="restart"
 
 addgroup --system icingaweb2;
 usermod -a -G icingaweb2 www-data;
-token="toto"
-if [ false = true ]; then
-
-icingacli setup config directory --group icingaweb2 --config="$install_dir";
-icingacli setup token create --config="$install_dir";
-token=$(icingacli setup token show --config="$install_dir";)
-
-fi
-
-#=================================================
-# SETUP APPLICATION WITH CURL
-#=================================================
 
 #=================================================
 # START SYSTEMD SERVICE
@@ -141,10 +124,13 @@ fi
 ynh_script_progression "Starting $app's systemd service..."
 
 # Start a systemd service
+ynh_systemctl --service="icinga-director" --action="restart"
+ynh_systemctl --service="icingadb-redis" --action="restart"
+ynh_systemctl --service="icingadb" --action="restart"
 ynh_systemctl --service="icinga2" --action="restart"
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression "Installation of $app completed. $token ${db_name}web2 $db_user $db_pwd"
+ynh_script_progression "Installation of $app completed"

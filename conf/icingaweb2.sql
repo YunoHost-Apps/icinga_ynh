@@ -3,7 +3,6 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost
--- Généré le : jeu. 03 sep. 2026 à 01:01
 -- Version du serveur : 10.11.18-MariaDB-0+deb12u1
 -- Version de PHP : 8.3.33
 
@@ -35,13 +34,6 @@ CREATE TABLE `icingaweb_group` (
   `mtime` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
 
---
--- Déchargement des données de la table `icingaweb_group`
---
-
-INSERT INTO `icingaweb_group` (`id`, `name`, `parent`, `ctime`, `mtime`) VALUES
-(1, 'Administrators', NULL, '2026-09-03 00:33:37', NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -54,13 +46,6 @@ CREATE TABLE `icingaweb_group_membership` (
   `ctime` timestamp NULL DEFAULT NULL,
   `mtime` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
-
---
--- Déchargement des données de la table `icingaweb_group_membership`
---
-
-INSERT INTO `icingaweb_group_membership` (`group_id`, `username`, `ctime`, `mtime`) VALUES
-(1, 'yalh', '2026-09-03 00:33:37', NULL);
 
 -- --------------------------------------------------------
 
@@ -78,13 +63,6 @@ CREATE TABLE `icingaweb_rememberme` (
   `ctime` timestamp NULL DEFAULT NULL,
   `mtime` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=DYNAMIC;
-
---
--- Déchargement des données de la table `icingaweb_rememberme`
---
-
-INSERT INTO `icingaweb_rememberme` (`id`, `username`, `passphrase`, `random_iv`, `http_user_agent`, `expires_at`, `ctime`, `mtime`) VALUES
-(1, 'yalh', '2760d2da18b82e888b6360ecb60d32d7fd537281a87eec72dccdaafe8769ab03b20ff0dca264c41b7c97098c4c5acce5aebe6c53e6621104384431631d02adcdad3276be26fcfd2802011c106ef46c370c11dce86b7a7eb69082e951688cd25cb92dc8f68cfb2e9451d3f33a0b0ef7adf53f0cc34ed35df3e11e4f2491965125', '5d4b017949372eb839545a75', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36', '2026-10-03 00:33:48', '2026-09-03 00:33:48', '2026-09-03 00:33:48');
 
 -- --------------------------------------------------------
 
@@ -120,13 +98,6 @@ CREATE TABLE `icingaweb_user` (
   `ctime` timestamp NULL DEFAULT NULL,
   `mtime` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
-
---
--- Déchargement des données de la table `icingaweb_user`
---
-
-INSERT INTO `icingaweb_user` (`name`, `active`, `password_hash`, `ctime`, `mtime`) VALUES
-('yalh', 1, 0x243279243130247248303171733769724262594177684a72457672574f503466584d656d6d775556534a306e6e364c3554794e752f64363951447043, '2026-09-03 00:33:37', NULL);
 
 -- --------------------------------------------------------
 
@@ -194,13 +165,13 @@ ALTER TABLE `icingaweb_user_preference`
 -- AUTO_INCREMENT pour la table `icingaweb_group`
 --
 ALTER TABLE `icingaweb_group`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `icingaweb_rememberme`
 --
 ALTER TABLE `icingaweb_rememberme`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `icingaweb_schema`

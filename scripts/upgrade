@@ -1,12 +1,26 @@
 #!/bin/bash
-### App file generated with YoloGen, the YunoHost app generator, version .
+
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
 
 source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
+# STOP SYSTEMD SERVICE
+#=================================================
+ynh_script_progression "Stopping $app's systemd service..."
+
+ynh_systemctl --service="icinga2" --action="stop"
+ynh_systemctl --service="icingadb" --action="stop"
+ynh_systemctl --service="icingadb-redis" --action="stop"
+ynh_systemctl --service="icinga-director" --action="stop"
+
+#=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
+ynh_script_progression "Ensuring downward compatibility..."
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
@@ -18,11 +32,25 @@ ynh_setup_source --dest_dir="$install_dir" --full_replace --keep=""
 chown -R $app:www-data "$install_dir"
 
 #=================================================
-# REAPPLY SYSTEM CONFIGURATIONS
+# REAPPLY SYSTEM CONFIGURATION
 #=================================================
 ynh_script_progression "Upgrading system configurations related to $app..."
 
+ynh_config_add_phpfpm
+
 ynh_config_add_nginx
+
+yunohost service add "icinga2" --description="icinga2"
+
+#=================================================
+# START SYSTEMD SERVICE
+#=================================================
+ynh_script_progression "Starting $app's systemd service..."
+
+ynh_systemctl --service="icinga-director" --action="restart"
+ynh_systemctl --service="icingadb-redis" --action="restart"
+ynh_systemctl --service="icingadb" --action="restart"
+ynh_systemctl --service="icinga2" --action="restart"
 
 #=================================================
 # END OF SCRIPT
