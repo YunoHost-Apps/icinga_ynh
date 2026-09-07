@@ -17,7 +17,7 @@ ynh_app_setting_set --key=api_pwd --value=$api_pwd
 api_root_pwd=$(ynh_string_random --length=8)
 ynh_app_setting_set --key=api_root_pwd --value=$api_root_pwd
 
-current_host=$(cat /etc/yunohost/current_host)
+host_name=$(hostname)
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
