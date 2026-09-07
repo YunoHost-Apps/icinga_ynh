@@ -22,14 +22,9 @@ ynh_systemctl --service="icinga-director" --action="stop"
 #=================================================
 ynh_script_progression "Ensuring downward compatibility..."
 
-#=================================================
-# DOWNLOAD, CHECK AND UNPACK SOURCE
-#=================================================
-ynh_script_progression "Upgrading source files..."
-
-ynh_setup_source --dest_dir="$install_dir" --full_replace --keep=""
-
-chown -R $app:www-data "$install_dir"
+chmod -R 2770 "$install_dir"
+chown -R "www-data:icingaweb2" "$install_dir"
+chown "icinga:icingaweb2" "$install_dir"
 
 #=================================================
 # REAPPLY SYSTEM CONFIGURATION
