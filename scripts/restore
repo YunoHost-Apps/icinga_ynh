@@ -17,8 +17,6 @@ ynh_restore "$install_dir"
 
 ynh_safe_rm "/etc/icingaweb2"
 ln -s $install_dir /etc/icingaweb2
-ln -s /usr/share/icingaweb2/modules/icingadb $install_dir/enabledModules/icingadb
-ln -s /usr/share/icingaweb2/modules/director $install_dir/enabledModules/director
 
 chmod -R 2770 "$install_dir"
 chown -R "www-data:icingaweb2" "$install_dir"
@@ -30,6 +28,16 @@ chown "icinga:icingaweb2" "$install_dir"
 ynh_script_progression "Restoring the MySQL database..."
 
 ynh_mysql_db_shell < ./db.sql
+ynh_mysql_db_shell <<< "CREATE DATABASE ${db_name}director DEFAULT CHARACTER SET 'utf8';"
+ynh_mysql_db_shell <<< "USE ${db_name}director;"
+ynh_mysql_db_shell <<< "GRANT ALL PRIVILEGES ON ${db_name}director.* TO '${db_user}'@'localhost' WITH GRANT OPTION;"
+ynh_mysql_db_shell <<< "FLUSH PRIVILEGES;"
+ynh_mysql_db_shell ${db_name}director < ./${db_name}director.sql
+ynh_mysql_db_shell <<< "CREATE DATABASE ${db_name}web2 DEFAULT CHARACTER SET 'utf8';"
+ynh_mysql_db_shell <<< "USE ${db_name}web2;"
+ynh_mysql_db_shell <<< "GRANT ALL PRIVILEGES ON ${db_name}web2.* TO '${db_user}'@'localhost' WITH GRANT OPTION;"
+ynh_mysql_db_shell <<< "FLUSH PRIVILEGES;"
+ynh_mysql_db_shell ${db_name}web2 < ./${db_name}web2.sql
 
 #=================================================
 # RESTORE SYSTEM CONFIGURATION
@@ -54,10 +62,17 @@ ynh_restore "/etc/icinga2/conf.d/api-users.conf"
 chmod 644 "/etc/icinga2/conf.d/api-users.conf"
 chown "nagios:nagios" "/etc/icinga2/conf.d/api-users.conf"
 
+ynh_restore "/var/lib/icingadb-redis/dump.rdb"
+
 #=================================================
 # RELOAD NGINX AND PHP-FPM OR THE APP SERVICE
 #=================================================
 ynh_script_progression "Reloading NGINX web server and $app's service..."
+
+ynh_systemctl --service="icinga-director" --action="restart"
+ynh_systemctl --service="icingadb-redis" --action="restart"
+ynh_systemctl --service="icingadb" --action="restart"
+ynh_systemctl --service="icinga2" --action="restart"
 
 ynh_systemctl --service="php$php_version-fpm" --action=reload
 
