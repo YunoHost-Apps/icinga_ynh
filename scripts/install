@@ -124,10 +124,10 @@ usermod -a -G icingaweb2 www-data;
 ynh_script_progression "Starting $app's systemd service..."
 
 # Start a systemd service
-ynh_systemctl --service="icinga-director" --action="restart"
-ynh_systemctl --service="icingadb-redis" --action="restart"
-ynh_systemctl --service="icingadb" --action="restart"
-ynh_systemctl --service="icinga2" --action="restart"
+ynh_systemctl --service="icinga-director" --action="restart" --wait_until="Started icinga-director.service" --log_path="systemd"
+ynh_systemctl --service="icingadb-redis" --action="restart" --wait_until="Started icingadb-redis.service" --log_path="systemd"
+ynh_systemctl --service="icingadb" --action="restart" --wait_until="Finished config sync" --log_path="systemd"
+ynh_systemctl --service="icinga2" --action="restart" --wait_until="Started icinga2.service" --log_path="systemd"
 
 #=================================================
 # END OF SCRIPT
