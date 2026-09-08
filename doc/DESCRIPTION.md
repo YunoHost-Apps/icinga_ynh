@@ -1,1 +1,1 @@
-This is a dummy description of this app features
+Open-source infrastructure monitoring you own. Flexible and vendor-neutral, built for hybrid environments.
