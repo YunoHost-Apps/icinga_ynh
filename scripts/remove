@@ -27,6 +27,7 @@ ynh_config_remove_phpfpm
 
 ynh_mysql_drop_db "${db_name}director"
 ynh_mysql_drop_db "${db_name}web2"
+ynh_mysql_drop_db "${db_name}ido"
 
 ynh_safe_rm "/etc/icinga2"
 ynh_safe_rm "/etc/icingadb"

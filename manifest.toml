@@ -61,12 +61,22 @@ ram.runtime = "50M"
 
         autoupdate.strategy = "latest_github_release"
 
+        [resources.sources.linuxfabrik]
+        url = "https://github.com/Linuxfabrik/monitoring-plugins/archive/refs/tags/v7.0.0.tar.gz"
+        sha256 = "7dd98afb13a43d85fb9a5fd531420b487e8eaf2bc8557a8f4904f0a57f905bed"
+        prefetch = false
+
+        autoupdate.strategy = "latest_github_release"
+
     [resources.system_user]
 
     [resources.install_dir]
 
     [resources.permissions]
     main.url = "/"
+
+    [resources.ports]
+    main.default = 5665
 
     [resources.apt]
     packages = [
@@ -92,7 +102,15 @@ ram.runtime = "50M"
         "icingadb-web",
         "icingaweb2",
         "icinga-director",
-        "monitoring-plugins"
+        "monitoring-plugins",
+        "icinga2-ido-mysql"
+    ]
+
+    [resources.apt.extras.linuxfabrik]
+    repo = "deb https://repo.linuxfabrik.ch/monitoring-plugins/debian/ __YNH_DEBIAN_VERSION__-release main"
+    key = "https://repo.linuxfabrik.ch/linuxfabrik.key"
+    packages = [
+        "linuxfabrik-monitoring-plugins"
     ]
 
     [resources.database]

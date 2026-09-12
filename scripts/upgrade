@@ -35,7 +35,7 @@ ynh_config_add_phpfpm
 
 ynh_config_add_nginx
 
-yunohost service add "icinga2" --description="icinga2"
+yunohost service add "icinga2" --description="icinga2" --needs_exposed_ports=$port
 
 #=================================================
 # START SYSTEMD SERVICE
